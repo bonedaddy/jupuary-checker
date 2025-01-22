@@ -1,5 +1,8 @@
 use jup::send_request;
-use tokio::{fs::File, io::{AsyncBufReadExt, BufReader}};
+use tokio::{
+    fs::File,
+    io::{AsyncBufReadExt, BufReader},
+};
 
 mod jup;
 
@@ -13,14 +16,9 @@ async fn main() -> anyhow::Result<()> {
 
     // Read lines asynchronously
     while let Some(wallet) = lines.next_line().await? {
-        match send_request(&client, &wallet).await {
-            Ok(res) => {
-                if res.data.total_allocated > 0 {
-                    println!("{wallet} {}", res.data.total_allocated);
-                }
-            }
-            Err(err) => {
-                println!("failed to send request {err:#?}");
+        if let Ok(res) = send_request(&client, &wallet).await {
+            if res.data.total_allocated > 0 {
+                println!("{wallet} {}", res.data.total_allocated);
             }
         }
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
